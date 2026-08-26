@@ -89,20 +89,23 @@ Python 3.13.14, NumPy 2.5.1, pyrr 0.10.3.
 
 | operation | input | Mojo | pyrr | pyrr / Mojo | outcome |
 |---|---:|---:|---:|---:|---|
-| `vector.normalize` | 1,000,000 x 3 | 14.49 ms | 64.03 ms | 4.42x | faster |
-| `vector.dot` | 1,000,000 x 3 | 6.61 ms | 34.21 ms | 5.18x | faster |
-| `vector3.cross` | 1,000,000 x 3 | 10.39 ms | 117.75 ms | 11.33x | faster |
-| `matrix33.inverse` | 200,000 matrices | 15.10 ms | 173.40 ms | 11.49x | faster |
-| `matrix44.inverse` | 100,000 matrices | 14.82 ms | 88.96 ms | 6.00x | faster |
-| `matrix44.multiply` | 50,000 scalar calls | 104.96 ms | 74.43 ms | 0.71x | slower |
+| `vector.normalize` | 1,000,000 x 3 | 6.87 ms | 44.95 ms | 6.54x | faster |
+| `vector.dot` | 1,000,000 x 3 | 6.32 ms | 31.51 ms | 4.99x | faster |
+| `vector3.cross` | 1,000,000 x 3 | 7.44 ms | 384.85 ms | 51.72x | faster |
+| `matrix33.inverse` | 200,000 matrices | 15.77 ms | 165.56 ms | 10.50x | faster |
+| `matrix44.inverse` | 100,000 matrices | 15.17 ms | 91.01 ms | 6.00x | faster |
+| `matrix44.multiply` | 50,000 scalar calls | 64.54 ms | 71.96 ms | 1.12x | faster |
 
 Scalar matrix multiplication stays on NumPy's zero-copy `dot` path, avoiding a
 ctypes round trip for a small fixed amount of work. Batched extensions use
 the Mojo kernel, whose native-width column blocks are SIMD-vectorized with a scalar
 tail for 3x3 matrices.
 
-No GPU path is provided. These fixed-size and elementwise kernels are
-memory-oriented workloads, and this repository makes no GPU performance claim.
+No parallel or GPU path is provided. The only near-parity benchmark is a scalar
+4x4 multiplication, where thread launch, FFI, and device-transfer overhead would
+dominate the work. The batched fixed-size and elementwise kernels are already at
+least about 5x faster and remain below the roughly 2-flop-per-byte threshold for
+GPU offload.
 
 ## How it works
 
