@@ -46,7 +46,7 @@ def mpr_vector_dot(lhs: Int, rhs: Int, dst: Int, n: Int, d: Int) abi("C"):
         var acc = SIMD[DType.float64, W](0.0)
         var j = 0
         while j + W <= d:
-            acc += a.load[width=W](r * d + j) * b.load[width=W](r * d + j)
+            acc += a.unsafe_load[width=W](r * d + j) * b.unsafe_load[width=W](r * d + j)
             j += W
         var total = acc.reduce_add()
         while j < d:
@@ -65,8 +65,8 @@ def mpr_vector_interpolate(
     var vd = SIMD[DType.float64, W](delta)
     var i = 0
     while i + W <= count:
-        var av = a.load[width=W](i)
-        z.store(i, av + (b.load[width=W](i) - av) * vd)
+        var av = a.unsafe_load[width=W](i)
+        z.store(i, av + (b.unsafe_load[width=W](i) - av) * vd)
         i += W
     while i < count:
         z[i] = a[i] + (b[i] - a[i]) * delta
@@ -100,7 +100,7 @@ def mpr_matmul(lhs: Int, rhs: Int, dst: Int, n: Int, size: Int) abi("C"):
                 for k in range(size):
                     acc += SIMD[DType.float64, W](
                         a[base + row * size + k]
-                    ) * b.load[width=W](base + k * size + col)
+                    ) * b.unsafe_load[width=W](base + k * size + col)
                 z.store(base + row * size + col, acc)
                 col += W
             while col < size:
